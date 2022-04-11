@@ -39,7 +39,7 @@ function FTPUpload {
     Clear-Host
     
     if ($logs) {
-        Write-Host $logFilePath
+        Write-Output $logFilePath
     }
     
     # Create log folder/file if it doesnt exist
@@ -52,11 +52,11 @@ function FTPUpload {
     "Start: " + (Get-Date) | Out-File $logFilePath -Append
     
     # Get all files from backup directory
-    $files = @(Get-ChildItem -Path  $directory -Recurse | ?{ !$_.PSIsContainer } | Where-Object { $_.lastwritetime -gt (Get-Date).AddDays(-1)} | Select-Object -ExpandProperty FullName )
+    $files = @(Get-ChildItem -Path  $directory -Recurse | Where-Object { !$_.PSIsContainer } | Where-Object { $_.lastwritetime -gt (Get-Date).AddDays(-1)} | Select-Object -ExpandProperty FullName )
     
     foreach ($item in $files) 
     {
-        if ($item -ne $null) 
+        if ($null -ne $item) 
         {
             # Construct path
             $uri = New-Object System.Uri($ftp + $item.Substring(3))
@@ -66,7 +66,7 @@ function FTPUpload {
     
             # Log uploaded file name to STDOUT if necessary
             if ($logs) {
-                Write-Host (Get-Date)$item
+                Write-Output (Get-Date)$item
             }
             
             # Update log file
