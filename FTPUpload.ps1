@@ -110,7 +110,7 @@ if ($false -eq ((Get-Item $uploadPath) -is [System.IO.DirectoryInfo])) {
     $directory = $entry.Directory.FullName
 
     $srcPath = $directory -Replace "\\", "\\" -Replace "\:", "\:"
-    $dstFile = $fullName -Replace $srcPath,$FTPHost
+    $dstFile = $fullName -Replace $srcPath, $FTPHost
     $dstFile = $dstFile -Replace "\\", "/"
 
     $uri = New-Object System.Uri($dstFile)
@@ -127,7 +127,7 @@ if ($false -eq ((Get-Item $uploadPath) -is [System.IO.DirectoryInfo])) {
 $uploadPath = (Get-Item $uploadPath).FullName
 
 $directoryFullName = $uploadPath
-$directoryName = (Get-Item $uploadPath).Name
+$directoryName     = (Get-Item $uploadPath).Name
 
 $entries = Get-ChildItem $uploadPath -Recurse
 $folders = $entries | Where-Object { $_.PSIsContainer}
@@ -135,14 +135,11 @@ $files   = $entries | Where-Object {!$_.PSIsContainer}
 
 # Create FTP directory with the upload folder name and update FTP path
 if (-not $contents) {
-    $srcFolder = (Get-Item $uploadPath).Parent.FullName
-    $dstFolder = $directoryFullName -Replace $srcFolder, $FTPHost
-    $dstFolder = $dstFolder -Replace "\\", "/"
-
+    $dstFolder = $FTPHost.TrimEnd('/') + '/' + $directoryName
     TryCreateFtpFolder -dstFolder $dstFolder -FTPUser $FTPUser -FTPPass $FTPPass
 }
 
-$srcFolderPath = (Get-Item $uploadPath).Parent.FullName
+$srcFolderPath = (Get-Item $uploadPath).Parent.FullName.TrimEnd('/')
 
 ## Create FTP sub-directories
 foreach($folder in $folders)
@@ -152,10 +149,10 @@ foreach($folder in $folders)
         $dstFolder = $folder.FullName -Replace $folder.Parent.FullName, $FTPHost
     }
     else {
-        $dstFolder = $folder.Fullname -replace $srcFolderPath, $FTPHost
+        $dstFolder = $folder.Fullname -Replace $srcFolderPath, $FTPHost
     }
 
-    $dstFolder = $dstFolder -replace "\\", "/"
+    $dstFolder = $dstFolder.Replace("\", "/")
     
     TryCreateFtpFolder -dstFolder $dstFolder -FTPUser $FTPUser -FTPPass $FTPPass
 }
@@ -171,8 +168,8 @@ foreach($entry in $files)
     $srcFullname = $entry.fullname
     $srcName     = $entry.Name
 
-    $dstFile = $srcFullname -Replace $srcFilePath, $FTPHost
-    $dstFile = $dstFile -Replace "\\", "/"
+    $dstFile = $srcFullname.Replace($srcFilePath, $FTPHost + "/")
+    $dstFile = $dstFile.Replace("\", "/")
 
     $uri = New-Object System.Uri($dstFile) 
 
